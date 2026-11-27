@@ -981,3 +981,24 @@ p {
     right: 8px;
   }
 }
+
+.toast {
+  position: absolute;
+  left: 50%;
+  bottom: 56px;
+  transform: translateX(-50%);
+  max-width: min(640px, calc(100% - 24px));
+  background: #12301d;
+  border: 1px solid #1f5a34;
+  color: #a9f0bf;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 12.5px;
+  overflow-wrap: anywhere;
+  box-shadow: 0 8px 24px #0008;
+}
+.toast.err {
+  background: #3a1414;
+  border-color: #6a2020;
+  color: #ffb0b0;
+}

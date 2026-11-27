@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { resolveShapes } from './assets/resolve';
 import { GeometryClient } from './geometry/client';
-import { download, safeName, to3MF, toSTL, toStlZip } from './geometry/export';
+import { safeName, to3MF, toSTL, toStlZip } from './geometry/export';
 import { TEMPLATES } from './model/defaults';
 import { migrate, useDesignStore } from './model/store';
+import { dataUrlToBytes, isDesktop, saveFile } from './platform';
 import type { BuildResult, MedalDesign } from './model/types';
 import { ColorsPanel, ElementsPanel, MedalPanel, PrintPanel } from './ui/Panels';
 import { Viewer, type ViewerHandle } from './ui/Viewer';
@@ -98,19 +99,32 @@ export default function App() {
   const parts = result?.parts ?? [];
   const canExport = parts.length > 0 && !result?.error;
 
-  const exportSTL = () => download(toSTL(parts, design.name), `${base}.stl`, 'model/stl');
-  const export3MF = () => download(to3MF(parts, design.colors, design.name), `${base}.3mf`, 'model/3mf');
-  const exportZip = () => download(toStlZip(parts, design.colors, base), `${base}_per_farge.zip`, 'application/zip');
+  const [toast, setToast] = useState<{ text: string; err?: boolean } | null>(null);
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 4000);
+    return () => clearTimeout(t);
+  }, [toast]);
+
+  /** Lagre en fil og gi beskjed (i skrivebordsappen: via «Lagre som»-dialog). */
+  const save = async (make: () => Uint8Array | string, filename: string, mime: string) => {
+    try {
+      const where = await saveFile(make(), filename, mime);
+      if (where && where !== 'download') setToast({ text: `Lagret: ${where}` });
+    } catch (e) {
+      setToast({ text: 'Kunne ikke lagre: ' + (e instanceof Error ? e.message : String(e)), err: true });
+    }
+  };
+  const exportSTL = () => save(() => toSTL(parts, design.name), `${base}.stl`, 'model/stl');
+  const export3MF = () => save(() => to3MF(parts, design.colors, design.name), `${base}.3mf`, 'model/3mf');
+  const exportZip = () => save(() => toStlZip(parts, design.colors, base), `${base}_per_farge.zip`, 'application/zip');
   const exportPNG = () => {
     const url = viewer.current?.screenshot();
     if (!url) return;
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${base}.png`;
-    a.click();
+    void save(() => dataUrlToBytes(url), `${base}.png`, 'image/png');
   };
   function saveProject() {
-    download(JSON.stringify(design, null, 1), `${base}.medalje.json`, 'application/json');
+    void save(() => JSON.stringify(design, null, 1), `${base}.medalje.json`, 'application/json');
   }
   const openProject = async (f: File | undefined) => {
     if (!f) return;
@@ -232,6 +246,7 @@ export default function App() {
             #
           </button>
         </div>
+        {toast && <div className={'toast' + (toast.err ? ' err' : '')}>{toast.text}</div>}
         <div className="status">
           {building || loadingAssets ? (
             <span className="spinner">{loadingAssets ? 'Laster fonter/ikoner…' : 'Bygger…'}</span>
@@ -302,7 +317,7 @@ export default function App() {
               <li>Ctrl+S – lagre prosjektfil</li>
             </ul>
             <p className="muted small">
-              Designet lagres automatisk i nettleseren. Ikoner: Iconify (sjekk lisens per samling). Fonter: Fontsource / Google Fonts (åpne lisenser).
+              {isDesktop ? 'Designet lagres automatisk mellom hver gang du åpner programmet.' : 'Designet lagres automatisk i nettleseren.'} Ikoner: Iconify (sjekk lisens per samling). Fonter: Fontsource / Google Fonts (åpne lisenser).
             </p>
           </div>
         </Modal>

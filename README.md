@@ -6,7 +6,26 @@ Et nettleserprogram for å designe medaljer for 3D-printing. Du velger form og s
 
 ![Malene](docs/maler.png)
 
-## Kom i gang
+## Last ned skrivebordsappen
+
+Ferdige programmer for **macOS** (`.dmg`), **Windows** (`.msi` / `-setup.exe`) og **Linux** (`.AppImage`, `.deb`, `.rpm`) ligger under [Releases](https://github.com/ahottesen/medal_app/releases).
+
+Appen er ikke signert, så systemet advarer første gang du åpner den:
+- **macOS:** høyreklikk på appen → «Åpne» → «Åpne». Får du beskjed om at appen er «skadet», kjør `xattr -cr /Applications/Medaljemaker.app` i Terminal.
+- **Windows:** trykk «Mer info» → «Kjør likevel» hvis SmartScreen advarer.
+- **Linux:** gjør AppImage-filen kjørbar (`chmod +x Medaljemaker*.AppImage`) og start den.
+
+Ikonsøk og det store fontutvalget krever nett. Malene og fire innebygde fonter virker uten.
+
+### Lage en ny versjon
+
+1. Oppdater `version` i `package.json` (f.eks. `1.1.0`).
+2. Lag en tagg og push den: `git tag v1.1.0 && git push origin v1.1.0`
+3. GitHub Actions (`.github/workflows/desktop.yml`) bygger for alle tre systemene og lager et **utkast** under Releases. Se over utkastet og trykk «Publish».
+
+På hver pull request bygges også alle tre versjonene. Filene ligger som «Artifacts» nederst på siden for kjøringen under **Actions**.
+
+## Kom i gang (utvikling)
 
 ```bash
 npm install
@@ -18,6 +37,15 @@ Bygg en statisk versjon (kan legges på hvilken som helst webserver):
 ```bash
 npm run build      # resultatet havner i dist/
 npm run preview
+```
+
+### Skrivebordsappen lokalt
+
+Krever [Rust](https://rustup.rs) og [systemavhengighetene til Tauri](https://v2.tauri.app/start/prerequisites/).
+
+```bash
+npm run desktop:dev     # åpner appen i eget vindu med automatisk oppdatering
+npm run desktop:build   # lager installasjonsfiler i src-tauri/target/release/bundle/
 ```
 
 ### GitHub Pages
@@ -87,6 +115,7 @@ Deler som stikker utenfor medaljen, eller som er løftet over ingenting, fylles 
 - **three.js** for 3D-visningen
 - **opentype.js** for å lese fonter og gjøre tekst om til konturer
 - **fflate** for ZIP/3MF
+- **Tauri 2** (Rust) pakker webappen som skrivebordsprogram, med vanlige «Lagre som»-dialoger
 
 ```
 src/
@@ -94,6 +123,8 @@ src/
   geometry/   polygongeneratorer, 3D-bygging (manifold), worker, eksport
   assets/     fonter (Fontsource), ikoner (Iconify), SVG-tolking, tekstlayout, bildesporing
   ui/         3D-visning, paneler, ikon- og fontvelger
+  platform.ts nettleser vs. skrivebordsapp (lagring, lenker)
+src-tauri/    skrivebordsappen (Rust/Tauri): konfigurasjon, ikoner, tillatelser
 scripts/
   test-build.ts   røyktest som bygger alle maler, former og elementtyper i Node
 ```
