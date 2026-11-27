@@ -1,0 +1,14 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Tillatelser for hovedvinduet: lagre-dialog, skrive valgt fil og åpne lenker i nettleseren",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "dialog:allow-save",
+    "dialog:allow-open",
+    "dialog:allow-message",
+    "fs:allow-write-file",
+    "opener:allow-open-url"
+  ]
+}

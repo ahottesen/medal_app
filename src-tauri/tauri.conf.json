@@ -1,0 +1,49 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "productName": "Medaljemaker",
+  "version": "../package.json",
+  "identifier": "io.github.ahottesen.medaljemaker",
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:5173",
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build:web"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Medaljemaker",
+        "width": 1400,
+        "height": 900,
+        "minWidth": 900,
+        "minHeight": 600,
+        "center": true,
+        "resizable": true,
+        "fullscreen": false,
+        "dragDropEnabled": false
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "publisher": "Medaljemaker",
+    "category": "GraphicsAndDesign",
+    "shortDescription": "Lag medaljer for 3D-printing",
+    "longDescription": "Design medaljer med tekst, ikoner, krans og mønstre, se dem i 3D og eksporter vanntette STL/3MF-filer for 3D-printing.",
+    "macOS": {
+      "minimumSystemVersion": "12.0"
+    }
+  }
+}
